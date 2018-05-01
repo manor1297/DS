@@ -1,0 +1,85 @@
+Exprmt2: To study and implement Java RMI
+Client Code:
+import java.rmi.Naming;
+import java.io.*;
+public class FibClient
+  {
+public static void main(String args[])
+{  try
+
+{ System.out.println("Enter no. to calculate fact& fib");
+FibInterface fi=(FibInterface)Naming.lookup("//127.0.0.1/Add");
+int a,b;
+BufferedReader br=new BufferedReader(new InputStreamReader 
+(System.in));
+            a=Integer.parseInt(br.readLine());
+System.out.println("Factorial is"+fi.factorial(a));
+System.out.println("Fibbonacci is:"+fi.fib(a));
+           }
+catch(Exception e)
+           {
+System.out.println("client exception:"+e);
+           }
+     }
+  }
+
+
+
+SERVER CODE:
+import java.rmi.Naming;
+import java.rmi.server.*;
+import java.rmi.*;
+public class FibServer extends UnicastRemoteObject implements FibInterface
+ {
+public FibServer() throws RemoteException{}
+public int factorial(int n1)
+     {
+int fact=1;
+for(int i=1;i<=n1;i++)
+         {
+fact=fact*i;
+         }
+return fact;
+  }
+public String fib(int n1)
+   {
+    String s="";
+int fibonacci=1;
+int i=0,pre=0,next=1,ans=0;
+     s="0 1";
+while(i<n1)
+         {
+ans=pre+next;
+           s=s+ans+"";
+pre=next;
+next=ans;
+i++;
+          }
+return s;
+    }
+public static void main(String args[])
+    {
+try
+       {
+FibServer FS=new FibServer();
+Naming.rebind("Add",FS);
+System.out.println("server is connected and waiting for client....");
+       }
+catch(Exception e)
+       {
+System.out.println("Server could not connect +e");
+       }
+     }
+ }
+INTERFACE CODE:
+import java.rmi.*;
+public interface FibInterface extends Remote
+    {public int factorial(int n1) throws RemoteException;
+public String fib(int n1) throws RemoteException;
+    }
+STEPS TO EXECUTE PROGRAM:
+1. Compile FibServer, FibClient and FibInterface files using javac cammand.
+2. Generate stub and skelton by running command: rmic FibServer
+3. Start RMI registry on 1 terminal as : rmiregistry
+4. Run FIbServer on 2nd terminal as java FibServer
+5. Run FibClient on 3rd terminal as java FibClient

@@ -1,0 +1,42 @@
+Adder.java
+import java.rmi.*;
+public interface Adder extends Remote
+{public int add(int x,int y)throws RemoteException;
+}
+
+AdderRemote.java
+
+import java.rmi.*;
+import java.rmi.server.*;
+public class AdderRemote extends UnicastRemoteObject implements Adder{
+AdderRemote()throws RemoteException{
+super();
+}
+public int add(int x,int y){return x+y;}
+}
+
+MyClient.java
+
+import java.rmi.*;
+public class MyClient{
+public static void main(String args[]){
+try{
+Adder stub=(Adder)Naming.lookup("//127.0.0.1/Add");
+System.out.println(stub.add(34,4));
+}catch(Exception e){System.out.println(e);}
+}
+}
+
+MyServer.java
+
+import java.rmi.*;
+
+import java.rmi.registry.*;
+public class MyServer{
+public static void main(String args[]){
+try{
+Adder stub=new AdderRemote();
+Naming.rebind("//127.0.0.1/Add",stub);
+}catch(Exception e){System.out.println(e);}
+}
+}

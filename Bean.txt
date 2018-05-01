@@ -1,0 +1,211 @@
+CalBean.java
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Calculator;
+
+import javax.ejb.Stateless;
+
+/**
+ *
+ * @author 15101A0031
+ */
+@Stateless
+public class CalBean implements CalINF {
+
+    // Add business logic below. (Right-click in editor and choose
+    // "Insert Code > Add Business Method")
+//private BigDecimal acc_id = new BigDecimal("1234");
+//private BigDecimal balance = new BigDecimal("5000");
+  
+
+public double add(double a, double b)
+{
+//BigDecimal fin_bal=balance.subtract(ammount);
+//return fin_bal;
+   double c;
+   c=a+b;
+   return c;
+}
+
+public double sub(double a, double b)
+{
+//BigDecimal fin_bal=balance.subtract(ammount);
+//return fin_bal;
+   double c;
+   c=a-b;
+   return c;
+}
+public double mult(double a, double b)
+{
+//BigDecimal fin_bal=balance.subtract(ammount);
+//return fin_bal;
+   double c;
+   c=a*b;
+   return c;
+}
+public double div(double a, double b)
+{
+//BigDecimal fin_bal=balance.subtract(ammount);
+//return fin_bal;
+   double c;
+   c=a/b;
+   return c;
+}
+}
+
+CallINF.java
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Calculator;
+import javax.ejb.Remote;
+
+/**
+ *
+ * @author 15101A0031
+ */
+@Remote
+public interface CalINF {
+    public double add(double a,double b);
+    public double sub(double a,double b);
+    public double mult(double a,double b);
+    public double div(double a,double b);
+    
+}
+
+Index.jsp
+
+<%-- 
+    Document   : index
+    Created on : Mar 21, 2018, 10:02:54 AM
+    Author     : 15101A0031
+--%>
+
+<%@ page import ="Calculator.CalINF, java.io.*, java.math.*, javax.naming.*" errorPage="error.jsp"%>
+<%@ page contentType="text/html" autoFlush="true" session="true" %>
+<%! 
+    private CalINF mybank = null;
+
+    public void jspInit() {
+        try {
+            InitialContext ic = new InitialContext();
+            mybank = (CalINF) ic.lookup(CalINF.class.getName());
+            //out.println("Object of mybank :: " + mybank.toString());
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    public void jspDestroy() {
+        mybank = null;
+    }
+%>
+
+<html>
+    <head>
+        <title>Calculator</title>
+    </head>
+
+    <body bgcolor="red">
+        <hr>
+        <h1>My Bank</h1>
+        <hr>
+
+        <form method ="GET">
+
+            <p>Enter first no : </p>
+            <input type="text" name="amount1" size="25">
+
+            <p>Enter 2nd no</p>
+            <input type="text" name="amount2" size="25">
+
+            <br/>         
+            <p>Enter the functionality</p>
+            <input type="text" name="f_type" size="25">
+           <br/>
+            <p>
+                <input type="submit" value = "Submit" >
+                <input type="reset" value = "Reset">
+            </p>           
+
+        </form> 
+        
+         <%
+            String amount1 = request.getParameter("amount1");
+            String amount2 = request.getParameter("amount2");
+            String f = request.getParameter("f_type");
+            double amt1,amt2;
+            if(amount1!= null && !amount1.equals("")){
+                try{
+                    amt1 = Double.parseDouble(amount1);            
+                } catch(NumberFormatException nfe){
+                throw(new NumberFormatException("Error Since 1st no is not a numaric type")); 
+                }finally{
+                    amt1=0.0;
+                } 
+            }
+             if(amount2!= null && !amount2.equals("")){
+                try{
+                    amt2 = Double.parseDouble(amount2);            
+                } catch(NumberFormatException nfe){
+                throw(new NumberFormatException("Error Since 2nd no is not a numaric type")); 
+                }finally{
+                    amt2=0.0;
+                } 
+            }
+            if(f!= null && !f.equals("")){
+                if (f.equals("add") || f.equals("sub") || f.equals("mult") || f.equals("div") ) {
+                    //do nothing
+                } else {
+                    throw(new IllegalArgumentException("Please enter valid op")); 
+                } 
+            }                                                 
+            out.println("amount1 ::" + amount1 + " ::::: "+"amount2 ::"+amount2+"::::" + " function :: " + f);
+            
+            if (amount1 != null  && amount2 != null && amount1.length() > 0) {
+               // BigDecimal d = new BigDecimal(amount);
+                //BigDecimal finamount=null
+                 amt1 = Double.parseDouble(amount1);   
+                  amt2 = Double.parseDouble(amount2);   
+               double result=0;
+                if (f.equals("add")) {                   
+                    result=mybank.add(amt1,amt2);
+                }
+                if (f.equals("sub")) {                    
+                    result=mybank.sub(amt1,amt2);
+                }
+                if (f.equals("mult")) {                    
+                    result=mybank.mult(amt1,amt2);
+                }
+                if (f.equals("div")) {                    
+                    result=mybank.div(amt1,amt2);
+                }
+        %>
+        <p style="background-color: #666;">
+            <%-- 
+                 if (trans.equals("deposite")) {
+            --%>
+                    The balance <%=f%> is <%=result%> 
+            <%--
+                 } else {
+                    if(trans.equals("withdraw")){
+           %>
+                     The balance <%=trans%> is <%=finamount%>
+            <%
+                    }
+                }                
+           --%>            
+        </p>
+        <%
+            }
+        %>
+    </body>
+</html>
+

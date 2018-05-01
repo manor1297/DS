@@ -1,0 +1,138 @@
+FectoClient.java
+
+import java .io.*;
+import FectoApp.*;
+import org.omg.CosNaming.*;
+import org.omg.CosNaming.NamingContextPackage.*;
+import org.omg.CORBA.*;
+public class FectoClient
+{
+static Fecto Fectoimpl;
+public static void main(String args[])
+{
+try
+{
+ORB orb=ORB.init(args,null); //Initialize Default ORB
+org.omg.CORBA.Object objRef=orb.resolve_initial_references("NameService");
+NamingContextExt ncRef=NamingContextExtHelper.narrow(objRef);//Get ROOT POA
+String name="Fecto";
+Fectoimpl=FectoHelper.narrow(ncRef.resolve_str(name));
+//search name  
+System.out.println("obtain an handle on server object"+Fectoimpl);
+System.out.println("Enter the number:");
+BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
+int no=Integer.parseInt(br.readLine());
+System.out.println("Factorial="+Fectoimpl.getFecto(no));
+Fectoimpl.shutdown();
+}
+catch(Exception e)
+{System.out.println("error"+ e);
+}
+}
+}
+
+
+FectoServer.java
+
+import java .io.*;
+import FectoApp.*;
+import org.omg.CosNaming.*;
+import org.omg.CosNaming.NamingContextPackage.*;
+import org.omg.CORBA.*;
+import org.omg.PortableServer.*;
+import org.omg.PortableServer.POA;
+import java.util.Properties.*;
+import java.util.*;
+import java.lang.*;
+class FectoImpl extends FectoPOA// implement method of //IDL
+{
+private ORB orb;
+public void setORB(ORB orb_val)
+{ orb=orb_val;
+}
+public int getFecto(int no)
+{
+int fect=1;
+for(int i=1;i<=no;i++)
+fect=fect*i;
+return fect;
+}
+public void shutdown()
+{
+orb.shutdown(false);
+}
+}
+public class FectoServer
+{
+public static void main(String args[])
+{ try
+{
+ORB orb=ORB.init(args,null); // create and initialize the ORB
+// Get reference to rootpoa & activate the POAManager
+POA rootpoa=POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+rootpoa.the_POAManager().activate();
+FectoImpl f=new FectoImpl() ;//create servant object
+f.setORB(orb);//register servant object to ORB
+org.omg.CORBA.Object ref=rootpoa.servant_to_reference(f);//get OR of servant
+Fecto a=FectoHelper.narrow(ref);//convert reference to CORBA(universal form)
+org.omg.CORBA.Object objRef=orb.resolve_initial_references("NameService");
+//invoke naming service
+NamingContextExt ncRef=NamingContextExtHelper.narrow(objRef); //get root POA
+String name="Fecto";
+NameComponent path[]=ncRef.to_name(name);//give name to CORBA object
+ncRef.rebind(path,a);//Bind OR in naming service.
+System.out.println("server is ready and waiting");
+orb.run();
+}
+catch(Exception e)
+{
+System.err.println("Error"+e);
+}
+System.out.println("Fecto server existing");
+}
+}
+
+
+Fecto.idl
+
+module FectoApp
+{
+interface Fecto
+{
+long getFecto(in long no);
+oneway void shutdown();
+};
+};
+
+
+
+
+Steps
+
+1ST TERMINAL:
+step1:compile IDL
+	idlj -fall  fecto.idl
+
+step2:compile all java files(server+client)
+	javac *.java
+
+step3:Start orbd.
+To start orbd from a UNIX command shell:
+	orbd -ORBInitialPort 1050
+
+From an MS-DOS system prompt (Windows):
+	start orbd -ORBInitialPort 1050
+
+2ND TERMINAL:
+step4:Start the server:
+To start the Server from a UNIX command shell, enter:
+	java FectoServer -ORBInitialPort 1050 
+
+From an MS-DOS system prompt (Windows), enter:
+	start java FectoServer -ORBInitialPort 1050 
+
+You will see HelloServer ready and waiting... when the server is started.
+
+3RD TERMINAL:
+step 5:Run the client application:
+  	java HelloClient -ORBInitialPort 1050

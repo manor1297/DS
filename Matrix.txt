@@ -1,0 +1,224 @@
+MatClient.java
+
+import java.rmi.Naming;
+import java.io.*;
+import java.util.*;
+class Thread1 extends Thread
+{
+	MatInterface obj;
+	int Mat1[][],Mat2[][],Mat[][];
+	public Thread1(MatInterface obj,int Mat1[][],int Mat2[][])
+	{
+		this.Mat1=Mat1;
+		this.Mat2=Mat2;
+		this.obj=obj;
+	}
+	public void run()
+	{
+		try{
+		Mat=obj.MatAdd(Mat1,Mat2);
+		for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			System.out.println("Add "+Mat[i][j]);
+		}
+		catch(Exception e)
+           	{
+		System.out.println("client exception:"+e);
+           	}
+	}
+}
+class Thread2 extends Thread
+{
+	MatInterface obj;
+	int Mat1[][],Mat2[][],Mat[][];
+	public Thread2(MatInterface obj,int Mat1[][],int Mat2[][])
+	{
+		this.Mat1=Mat1;
+		this.Mat2=Mat2;
+		this.obj=obj;
+	}
+	public void run()
+	{
+		try{
+		Mat=obj.MatSub(Mat1,Mat2);
+		for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			System.out.println("Sub "+Mat[i][j]);
+		}
+		catch(Exception e)
+           	{
+		System.out.println("client exception:"+e);
+           	}
+	}
+}
+class Thread3 extends Thread
+{
+	MatInterface obj;
+	int Mat1[][],Mat2[][],Mat[][];
+	public Thread3(MatInterface obj,int Mat1[][],int Mat2[][])
+	{
+		this.Mat1=Mat1;
+		this.Mat2=Mat2;
+		this.obj=obj;
+	}
+	public void run()
+	{
+		try{
+		Mat=obj.MatTrans(Mat1);
+		for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			System.out.println("Trans "+Mat[i][j]);
+		}
+		catch(Exception e)
+           	{
+		System.out.println("client exception:"+e);
+           	}
+	}
+}
+class Thread4 extends Thread
+{
+	MatInterface obj;
+	int Mat1[][],Mat2[][],Mat[][];
+	public Thread4(MatInterface obj,int Mat1[][],int Mat2[][])
+	{
+		this.Mat1=Mat1;
+		this.Mat2=Mat2;
+		this.obj=obj;
+	}
+	public void run()
+	{
+		try{
+		Mat=obj.MatMult(Mat1,Mat2);
+		for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			System.out.println("Mult "+Mat[i][j]);
+		}
+		catch(Exception e)
+           	{
+		System.out.println("client exception:"+e);
+           	}
+	}
+}
+
+public class MatClient
+  {
+public static void main(String args[])
+{ 
+
+ try
+{ 
+Scanner sc=new Scanner(System.in);
+int Mat1[][]=new int[3][3];
+int Mat2[][]=new int[3][3];
+System.out.println("Enter matrix 1 \n");
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+		{
+			Mat1[i][j]=sc.nextInt();
+		}
+	System.out.println("Enter matrix 2 \n");
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+		{
+			Mat2[i][j]=sc.nextInt();
+		}
+MatInterface T=(MatInterface)Naming.lookup("//127.0.0.1/Add");
+	Thread1 t1=new Thread1(T,Mat1,Mat2);
+	Thread2 t2=new Thread2(T,Mat1,Mat2);
+	Thread3 t3=new Thread3(T,Mat1,Mat2);
+	Thread4 t4=new Thread4(T,Mat1,Mat2);
+	t1.start();
+	t2.start();
+	t3.start();
+	t4.start();
+
+}
+catch(Exception e)
+           {
+System.out.println("client exception:"+e);
+           }
+     }
+  }
+
+MatInterface.java
+
+import java.rmi.*;
+public interface MatInterface extends Remote
+    {public int[][] MatAdd(int Mat1[][],int Mat2[][]) throws RemoteException;
+	public int[][] MatSub(int Mat1[][],int Mat2[][]) throws RemoteException;
+	public int[][] MatTrans(int Mat1[][]) throws RemoteException;
+	public int[][] MatMult(int Mat1[][],int Mat2[][]) throws RemoteException;
+    }
+
+
+Matrix.java
+
+import java.rmi.Naming;
+import java.rmi.server.*;
+import java.rmi.*;
+import java.util.*;
+public class Matrix extends UnicastRemoteObject implements MatInterface
+ {
+public Matrix() throws RemoteException{}
+public int[][] MatAdd(int Mat1[][],int Mat2[][])
+{
+	int [][]Mat=new int[3][3];
+	int i=0,j=0;
+	for(i=0;i<3;i++)
+		for(j=0;j<3;j++)
+		{
+			Mat[i][j]=Mat1[i][j]+Mat2[i][j];
+		}
+	return Mat;
+}
+public int[][] MatSub(int Mat1[][],int Mat2[][])
+{
+	int Mat[][]=new int[3][3];
+	int i=0,j=0;
+	for(i=0;i<3;i++)
+		for(j=0;j<3;j++)
+		{
+			Mat[i][j]=Mat1[i][j]-Mat2[i][j];
+		}
+	return Mat;
+}
+public int[][] MatTrans(int Mat1[][])
+{
+	int Mat[][]=new int[3][3];
+	int i=0,j=0;
+	for(i=0;i<3;i++)
+		for(j=0;j<3;j++)
+		{
+			Mat[i][j]=Mat1[j][i];
+		}
+	return Mat;
+}
+public int[][] MatMult(int Mat1[][],int Mat2[][])
+{
+	int Mat[][]=new int[3][3];
+	int i=0,j=0;
+	for(i=0;i<3;i++)
+		for(j=0;j<3;j++)
+		{
+			Mat[i][j]=0;
+			for(int k=0;k<3;k++)      
+			{      
+				Mat[i][j]+=Mat1[i][k]*Mat2[k][j];
+			}
+		}
+	return Mat;
+}
+public static void main(String args[])
+    	{
+try
+       {
+Matrix T=new Matrix();
+Naming.rebind("Add",T);
+System.out.println("server is connected and waiting for client....");
+	}
+	catch(Exception e)
+       {
+		System.out.println("Server could not connect +e");
+       }
+}
+}
