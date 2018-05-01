@@ -1,0 +1,113 @@
+Exp8:Stateful session bean
+Account.java 
+
+package stateful; 
+
+import javax.ejb.Remote; 
+import javax.ejb.Remove; 
+@Remote 
+public interface Account { 
+public float deposit(float amount); 
+public float withdraw(float amount); 
+@Remove 
+public void remove(); 
+} 
+
+NewSessionBean.java 
+package stateful; 
+import javax.ejb.Stateful; 
+import javax.ejb.Remote; 
+import javax.ejb.Remove; 
+@Stateful(name="NewSessionBean") 
+@Remote(Account.class) 
+/** 
+* @author Ichhanshu
+*/ 
+public class NewSessionBean implements Account{ 
+float balance = 0; 
+public float deposit(float amount){ 
+balance += amount; 
+return balance; 
+} 
+public float withdraw(float amount){ 
+balance -= amount; 
+return balance; 
+} 
+@Remove 
+public void remove() { 
+balance = 0; 
+} 
+} 
+Index.jsp 
+<%-- 
+Document : index 
+Created on : Feb 17, 2017, 6:57:18 PM 
+Author : Ichhanshu
+--%> 
+<%@ page contentType="text/html; charset=UTF-8"%> 
+<%@ page import="stateful.Account,javax.naming.*"%> 
+<%! 
+public Account account = null; 
+float bal=0; 
+public void jspInit() { 
+try { 
+InitialContext ic = new InitialContext(); 
+account = (Account) ic.lookup(Account.class.getName()); 
+System.out.println("Loaded Account Bean"); 
+} catch (Exception ex) { 
+System.out.println("Error:"+ 
+ex.getMessage()); 
+} 
+} 
+public void jspDestroy() { 
+account = null; 
+} 
+%> 
+<html> 
+<head> 
+<title>Bank Account</title> 
+</head> 
+<body> 
+<h1><p align="center"><font size="6" color="#800000">Bank Transaction Request Form</h1> 
+<hr><br> 
+<table bgcolor="#FFFFCC" align="center"> 
+<form method="POST"> 
+<tr><td></tr></td> 
+<tr><td>Enter the amount in rupees: 
+<input type="text" name="amt" size="10"></tr></td> 
+<br> 
+<tr><td><b>Select your choice:</b></tr></td> 
+<tr><td><input type="radio" name="group1" value ="dep">Deposit</tr></td> 
+<tr><td><input type="radio" name="group1" value ="with">Withdraw<br></tr></td> 
+<tr><td> 
+<input type="submit" value="Transmit"> 
+<input type="reset" value="Reset"></tr></td> 
+<tr><td></tr></td> 
+</form> 
+</table> 
+<% 
+String s1 = request.getParameter("amt"); 
+String s2 = request.getParameter("group1"); 
+if ( s1 != null) 
+{ 
+Float amt = new Float(s1); 
+if(s2.equals("dep")) 
+{bal=account.deposit(amt.floatValue());} 
+else if(s2.equals("with")) 
+{ bal=account.withdraw(amt.floatValue());} 
+else { 
+%> 
+<p>Please select your choice</p> 
+<% 
+} 
+%> 
+<br>Please enter the amount<br> 
+<p> 
+The Transaction is complete<br> 
+<b>Your Current Balance is:</b> <%= bal%> 
+</p> 
+<% 
+} 
+%> 
+</body> 
+</html>
